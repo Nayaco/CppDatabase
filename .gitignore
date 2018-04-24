@@ -4,3 +4,14 @@ s
 .vscode
 stest
 ctest
+*.c
+*.db
+*.docx
+*.gch
+*.o
+test*
+TSTCP*
+x32.cpp
+info.md
+Dserver
+client
