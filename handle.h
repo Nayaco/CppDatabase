@@ -60,7 +60,6 @@
 #ifndef DB_H
 #define DB_H
 
-#include <cstdio>
 #include <stdint.h>
 #include <cstring>
 #include <fstream>
@@ -108,7 +107,7 @@ struct NODE{
     NODE(uint32_t id, uint32_t name, const char *rname, const char *des);
     ~NODE();
 };
-// mini useful (build)
+// (build)
 struct HNODE{
     uint32_t                  _num;
     uint32_t                  _sortnum;
@@ -122,11 +121,12 @@ struct HNODE{
     NODE*     ADD(uint16_t sort, uint32_t name, const char *rname, const char *description);
     void      DELETE(uint16_t sort, uint32_t name);
     void      CLEAR();
-    uint32_t  FINDBY_RNAME(uint16_t sort,const char *rname);
+    uint32_t  FINDBY_RNAME(uint16_t sort, const char *rname);
+    uint32_t  GETBY_RNAME(uint16_t sort, const char *rname, struct RNP *Data);
     uint32_t  FINDBY_ID(uint16_t sort, uint32_t id);
 };
 
-// stable quick (backup)
+// stable edition(backup)
 struct BAKUP{                                  
     uint32_t                  _num;
     uint32_t                  _sortnum;           // num of sort

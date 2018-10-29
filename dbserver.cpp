@@ -1,5 +1,5 @@
 #include "dbserver.h"
-_dsocket::_dsocket(uint16_t)
+dsocket::dsocket(uint16_t)
 {
     this->_port = port;
     if(this->_listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
@@ -22,12 +22,12 @@ _dsocket::_dsocket(uint16_t)
         return;
     }
 }
-_dsocket::~_dsocket()
+dsocket::~dsocket()
 {
     close(this->_listenfd);
 }
 
-void _dsocket::_listen(void *(*callback)(char *buff))
+void dsocket::listen(void *(*callback)(char *buff))
 { 
     long _connfd;
     while(1)

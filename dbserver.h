@@ -15,18 +15,21 @@ typedef uint8_t         SSTATUS;
 #define CONNECT_ERROR   ((uint8_t)3)
 
 #define MAXLINE         4096
-typedef _dsocket        D_SOCKET;
+typedef dsocket        D_SOCKET;
+typedef void *(*callback)();
 
-struct _dsocket{
-    long                _listenfd;
-    struct sockadd_in   _addr;
-    char                _buff[MAXLINE];
-    SSTATUS             _status;
-    uint16_t            _port;
-    _dsocket(uint16_t port);
-    ~_dsocket();
-    _connect();
-    void _liten(void *(*callback)());
+class dsocket{
+    protected:
+        long                _listenfd;
+        struct sockadd_in   _addr;
+        char                _buff[MAXLINE];
+        SSTATUS             _status;
+        uint16_t            _port;
+    public:
+    dsocket(uint16_t port);
+    ~dsocket();
+    csonnect();
+    void liten(callback);
 };
 
 #endif

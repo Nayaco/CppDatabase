@@ -1,6 +1,6 @@
 #ifndef DSTRUCTURE_H
 #define DSTRUCTURE_H
-#include <stdint.h>
+#include <cstdint>
 #define MAXLEN 4096
 struct data_in{
     uint16_t  _cmd;

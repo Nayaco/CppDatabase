@@ -99,10 +99,39 @@ uint32_t HNODE::FINDBY_RNAME(uint16_t sort,const char *rname)
     }
     for(struct NODE *i = this->_pond[_wsort]; i != NULL;i = i->_next){
         if(strlen(i->_rname) == len){
+            int flag = 0;
             for(int j = 0; j < len; j++){
-                if((i->_rname)[j] != rname[j])return 0;
+                if((i->_rname)[j] != rname[j]){
+                    flag = 1;
+                    break;
+                }
             }
-            return i->_name;
+            if(!flag)return i->_name;
+        }
+    }
+    return 0;
+}//!
+uint32_t  HNODE::GETBY_RNAME(uint16_t sort, const char *rname, struct RNP *Data)
+{
+    int len = strlen(rname);
+    long _wsort = FIND_SORT(sort);
+    if(_wsort == -1){
+        return 0;
+    }
+    for(struct NODE *i = this->_pond[_wsort]; i != NULL;i = i->_next){
+        if(strlen(i->_rname) == len){
+            int flag = 0;
+            for(int j = 0; j < len; j++){
+                if((i->_rname)[j] != rname[j]){
+                    flag = 1;
+                    break;
+                }
+            }
+            if(!flag){
+                Data->_name = i->_name;
+                strcpy(Data->_description, i->_description);
+                return i->_name;
+            }
         }
     }
     return 0;
@@ -373,14 +402,21 @@ uint8_t infohandle(HNODE *db, BAKUP *bakup, struct RNP *data)
             break;
         }
         case 2:{
-            data->_name = db->FINDBY_RNAME(data->_sort, data->_rname);
+            db->GETBY_RNAME(data->_sort, data->_rname, data);
             break;
         }
         case 3:{
             uint32_t _name = db->FINDBY_RNAME(data->_sort, data->_rname);
             db->DELETE(data->_sort, _name);
             bakup->_change(data->_sort, db);
-            printf("%d\n", bakup->_snum[0]);
+            break;
+        }
+        case 4:{
+            uint32_t _name = db->FINDBY_RNAME(data->_sort, data->_rname);
+            db->DELETE(data->_sort, _name);
+            data->_name = _name;
+            NODE* _node = db->ADD(data->_sort, data->_name, data->_rname, data->_description);
+            bakup->_putin(_node, data->_sort);
             break;
         }
         default:{

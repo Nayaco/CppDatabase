@@ -20,8 +20,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cstdint>
 #include <errno.h>
-#include <stdint.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -41,6 +41,12 @@
 typedef uint8_t  PSTATUS;
 #define NORMAL   0
 #define ABNORMAL 1
+
+bool fexist(const char *filename)
+{
+    std::ifstream file(filename);
+    return (bool)file;
+}
 
 void sender(struct data_in *data, char *serverip, uint16_t port, uint8_t *rebuff)
 {
@@ -120,8 +126,9 @@ void _sendfile(char *filename, char *description, uint16_t sort, uint32_t name, 
     input._buff[4] = (name >> 8) & 0x00ff;
     input._buff[5] = name & 0x00ff;
     
-    std::memcpy(input._buff + 6, filename, sizeof(filename));
-    std::memcpy(input._buff + 61, description, sizeof(description));
+    std::memcpy(input._buff + 6, filename, 8 * strlen(filename));
+    std::memcpy(input._buff + 61, description, 8 * strlen(description));
+    if(!fexist(filename))return;
     FILE *f = fopen(filename, "rb");
     int i;
     for(i = 0; i < 3904 && !feof(f); i++)fread(buff + i, sizeof(uint8_t), 1, f);
@@ -150,28 +157,26 @@ void _sendfile(char *filename, char *description, uint16_t sort, uint32_t name, 
 void _getfile(char *filename, uint16_t sort, char *ip, uint16_t port)
 {
     struct data_in input, output;
+    struct RNP _rnp;
     uint8_t buff[MAXLEN];
     uint8_t rebuff[MAXLEN];
     input._cmd = 2;
     input._size = 0;
     input._buff[0] = sort >> 8;
     input._buff[1] = sort & 0x00ff;
-    std::memcpy(input._buff + 6, filename, sizeof(filename));
+    std::memcpy(input._buff + 6, filename, 8 * strlen(filename));
     sender(&input, ip, port, rebuff);
 
-    buffparse(rebuff, &output, MAXLEN);
+    buffparse(rebuff, &output, MAXLEN); 
+    _rnpparser(&_rnp, &output, buff);
     if(output._cmd == 0){
         printf("FILE NOT EXITST\n");
     }else{
         char rmtfilename[9];
         rmtfilename[8] = '\0';
-        printf("%x %x %x %x\n", output._buff[2], output._buff[3], output._buff[4], output._buff[5]);
-        uint32_t remotename = output._buff[2] << 24;
-        remotename += output._buff[3] << 16;
-        remotename += output._buff[4] << 8;
-        remotename += output._buff[5];
-        _tofilename(rmtfilename, remotename);
+        _tofilename(rmtfilename, _rnp._name);
         printf("FILE IN REMOTE : %s\n", rmtfilename);
+        printf("BOOKINFO : %s\n", _rnp._description); 
     }
     return;
 }
@@ -239,19 +244,12 @@ void _entry(){
             scanf("%d", &_temp);
         }
         _cmd = _temp & 0xffff;
-        printf("----------PLEASE PUTIN THE SORT------------\n");
-        scanf("%d", &_temp);
-        while(_temp > 3 && _temp < 1){
-            printf("----------PLEASE PUTIN THE SORT------------\n");
-            scanf("%d", &_temp);
-        }
-        sort = _temp & 0xffff;
         printf("----------PLEASE PUTIN THE NAME------------\n");
         scanf("%s", filename);
-
+        sort = (filename[0] << 8)|(filename[1]);
         switch(_cmd){
             case 1:{
-                printf("----------PLEASE PUTIN THE DESC------------\n");
+                printf("-PLEASE PUTIN THE DESCRIPTION(AUTHOR AND PUBLISHJOUSE AND SOMETHINGELSE)-\n");
                 scanf("%s", description);
                 uint32_t name = _getname();
                 _sendfile(filename, description, sort, name, serverip, port);

@@ -220,18 +220,20 @@ void *sock_out(void *args)
         if(_rnp._cmd == 2){
             char filename[9];
             filename[8] = '\0';
-            uint32_t idname = _db->FINDBY_RNAME(_rnp._sort, _rnp._rname);
-            if(idname == 0)_todata._cmd = 0;
+
+            infohandle(_db, _bak, &_rnp);
+            if(_rnp._name == 0)_todata._cmd = 0;
             else{
+                uint32_t idname = _rnp._name;
                 _todata._cmd = 1;
                 _todata._buff[2] = (idname >> 24) & 0xff; 
                 _todata._buff[3] = (idname >> 16) & 0xff; 
                 _todata._buff[4] = (idname >> 8) & 0xff; 
-                _todata._buff[5] = idname & 0xff; 
+                _todata._buff[5] = idname & 0xff;
+                memcpy(_todata._buff + 6, _rnp._rname, 55 * sizeof(uint8_t));
+                memcpy(_todata._buff + 61, _rnp._description, 127 * sizeof(uint8_t));
             }
-            _todata._size = 6;
-
-            infohandle(_db, _bak, &_rnp);
+            _todata._size = 4096;
 
             buffgenerator(_tobuff, &_todata);
             if(send(_connfd, _tobuff, MAXLEN, 0) == -1){
